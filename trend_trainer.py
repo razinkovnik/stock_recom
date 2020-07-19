@@ -77,7 +77,7 @@ if __name__ == "__main__":
     args = TrendArgs()
     trend_trainer = TrendTrainer(args)
     df = pd.read_csv("dataset/companies.csv")
-    companies = df['0'].to_list()
+    companies = df.symbol.to_list()
     for i, company in enumerate(companies[280:]):
         trend_trainer.add_company(company)
         print(f"{i} / {len(companies)}")

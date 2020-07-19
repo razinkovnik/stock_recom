@@ -8,7 +8,7 @@ import torch
 import yfinance as yf
 
 from args import TrendArgs
-from utils import *
+from trend_utils import *
 from time_series_predictor import TimeSeriesPredictor
 from sklearn.preprocessing import MinMaxScaler
 

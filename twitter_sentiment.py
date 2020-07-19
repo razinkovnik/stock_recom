@@ -24,7 +24,7 @@ def transform_dataset(args: TrainingArguments):
 
 
 def collate(data: List[Tuple[str, int]], tokenizer: BertTokenizer, block_size: int) -> Dict:
-    texts, labels = list(map(list,zip(*data)))
+    texts, labels = list(map(list, zip(*data)))
     input_data = tokenizer.batch_encode_plus(texts, max_length=block_size,
                                              truncation=True, pad_to_max_length=True, return_tensors="pt").to(
         args.device)
@@ -36,6 +36,22 @@ def load_data(filename: str, tokenizer: BertTokenizer, batch_size: int, args: Tr
     data = pd.read_csv(filename)
     data = list(zip(data.text, data.label))
     return build_data_iterator(data, batch_size, lambda data: collate(data, tokenizer, args.block_size))
+
+
+class TwitterSentimentModel:
+    def __init__(self, args: TrainingArguments):
+        self.model = BertForSequenceClassification.from_pretrained(args.output_dir)
+        self.tokenizer = BertTokenizer.from_pretrained(args.model_name)
+        self.model.eval()
+        self.device = args.device
+        self.model.to(self.device)
+
+    def analyze(self, tweets: List[str]):
+        inputs = self.tokenizer.batch_encode_plus(tweets, return_tensors="pt", max_length=256, truncation=True,
+                                                  pad_to_max_length=True).to(self.device)
+        with torch.no_grad():
+            out = torch.softmax(self.model(**inputs)[0], dim=1)
+        return out[:, 1].cpu().numpy()
 
 
 if __name__ == "__main__":
